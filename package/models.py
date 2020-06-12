@@ -401,3 +401,19 @@ class Version(BaseModel):
 
     def __str__(self):
         return "%s: %s" % (self.package.title, self.number)
+
+class Review(BaseModel):
+
+    description = models.TextField(_("description"), blank=True)
+    title_plural = models.CharField(_("Title Plural"), max_length=50, blank=True)
+    show_pypi = models.BooleanField(_("Show pypi stats & version"), default=True)
+    package = models.ForeignKey(Package, related_name='reviews', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+
+
+    class Meta:
+        ordering = ['id']
+        verbose_name_plural = 'reviews'
+
+    def __str__(self):
+        return self.id

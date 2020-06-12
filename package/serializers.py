@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Package
+from .models import Package, Review
 
 
 class PackageSerializer(serializers.ModelSerializer):
@@ -34,4 +34,14 @@ class PackageSerializer(serializers.ModelSerializer):
                     "usage_count",
                     "commits_over_52",
                     "development_status"
+                )
+
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = (
+                    "description",
+                    "created_by",
+                    "package"
                 )

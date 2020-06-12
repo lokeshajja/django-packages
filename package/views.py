@@ -1,5 +1,6 @@
 import importlib
 import json
+from rest_framework.renderers import JSONRenderer
 
 from django.conf import settings
 from django.contrib import messages
@@ -7,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.urls import reverse
 from django.db.models import Q, Count
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -18,8 +19,10 @@ from django.views.decorators.http import require_POST
 from grid.models import Grid
 from homepage.models import Dpotw, Gotw
 from package.forms import PackageForm, PackageExampleForm, DocumentationForm
-from package.models import Category, Package, PackageExample
+from package.models import Category, Package, PackageExample, Review
 from package.repos import get_all_repos
+from package.repos.github import GitHubHandler
+from package.serializers import ReviewSerializer
 
 from .utils import quote_plus
 
@@ -328,6 +331,7 @@ def package_detail(request, slug, template_name="package/package.html"):
 
     package = get_object_or_404(Package, slug=slug)
     no_development = package.no_development
+    package_reviews = package.reviews.all()
     try:
         if package.category == Category.objects.get(slug='projects'):
             # projects get a bye because they are a website
@@ -353,7 +357,8 @@ def package_detail(request, slug, template_name="package/package.html"):
                 pypi_no_release=pypi_no_release,
                 warnings=warnings,
                 latest_version=package.last_released(),
-                repo=package.repo
+                repo=package.repo,
+                package_reviews=package_reviews
             )
         )
 
@@ -422,3 +427,28 @@ def github_webhook(request):
         package.last_fetched = timezone.now()
         package.save()
     return HttpResponse()
+
+
+def issues(request, slug=None):
+    service_object = GitHubHandler()
+    issues = service_object.fetch_issues(slug)
+    return JsonResponse(data=issues, safe = False)
+
+def add_review(request, slug=None):
+    package = get_object_or_404(Package, id=slug)
+    if request.method == "POST":
+        description = request.POST.get('review')
+        created_by = request.user.id
+        package = package.id
+        data = {
+            'description' : description,
+            'created_by' : created_by,
+            'package' : package
+        }
+        serializer = ReviewSerializer(data= data)
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return HttpResponse(data = serializer.errors)
+        
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))

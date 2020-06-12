@@ -5,9 +5,14 @@ from django.utils import timezone
 
 from github3 import GitHub, login
 import requests
+from requests_oauthlib import OAuth1
 
 from .base_handler import BaseHandler
 from package.utils import uniquer
+from package.models import Package
+from django.shortcuts import get_object_or_404
+import requests
+import json
 
 
 class GitHubHandler(BaseHandler):
@@ -83,5 +88,27 @@ class GitHubHandler(BaseHandler):
 
         package.save()
         return package
+    
+    def _get_repository(self, package):
+        repo_name = package
+        if repo_name.endswith("/"):
+            repo_name = repo_name[:-1]
+        try:
+            username, repo_name = package.split('/')
+        except ValueError:
+            return None
+        return self.github.repository(username, repo_name)
+
+
+    def fetch_issues(self, package_id):
+        package = get_object_or_404(Package, id=package_id)
+        package_url = str(package.repo_url)
+        package_url = package_url.replace('https://github.com/','https://api.github.com/repos/') + '/issues'
+        auth = OAuth1('', '', settings.GITHUB_TOKEN, '')
+        response = requests.get(package_url, auth=auth)
+        data = response.json()
+        return data
+
+
 
 repo_handler = GitHubHandler()

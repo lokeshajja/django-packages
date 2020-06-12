@@ -244,6 +244,26 @@
             </p>
         </div>
     </div>
+    <div class="row" style="padding-bottom: 20px;">
+        <div class="col-sm-12">
+            <h2>{% trans "Reviews" %}</h2>
+        </div>
+    </div>
+    <form class="form-group"  method="POST" action="http://0.0.0.0:8000/packages/{{ package.id }}/reviews/add/" >
+        {% csrf_token %}
+        <label for="review" >Add Review </label>
+        <textarea class="form-control" rows="5" cols="5" id="review" name='review' ></textarea>
+        <h5>
+            <button type="submit" class="btn btn-info mt-3 pl-3 review-submit" value={{ package.id }}>Submit</button>
+        </h5>
+    </form>
+    <p>
+        {% for review in package_reviews %}
+            <a href="#">{{ review.created_by }}</a>&nbsp;
+            <p>{{ review.description }}</p>
+        {% endfor %}
+    </p>
+
 {% endblock %}
 
 {% block javascript %}

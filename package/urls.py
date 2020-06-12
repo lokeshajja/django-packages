@@ -16,7 +16,9 @@ from package.views import (
                             package_detail,
                             post_data,
                             edit_documentation,
-                            github_webhook
+                            github_webhook,
+                            add_review,
+                            issues,
                             )
 
 urlpatterns = [
@@ -112,4 +114,7 @@ urlpatterns = [
         view=github_webhook,
         name="github_webhook"
     ),
-]
+
+    url(r"^(?P<slug>[-\w]+)/reviews/add/$", add_review, name="add_review"),
+    url(r"^(?P<slug>[-\w]+)/issues/$", issues, name="fetch_issues_of_package"),
+    ]
