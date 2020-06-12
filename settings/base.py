@@ -417,3 +417,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 20
 }
+
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}

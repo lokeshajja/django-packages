@@ -86,3 +86,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+.vscode/launch.json
+package/migrations/0006_review.py
+package/migrations/0007_auto_20200612_0244.py
